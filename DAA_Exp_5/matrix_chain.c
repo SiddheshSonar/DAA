@@ -1,57 +1,72 @@
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int MatrixChainOrder(int arr[], int n)
-{
-	int mat[n][n], len, c, j;
-	
-	for (int i = 1; i < n; i++) {
-		for (int j = 1; j < n; j++) {
-			if(i >= j) {
-				mat[i][j] = 0;
-			}
-		} 
-	}
-
-	for (len = 2; len < n; len++) {
-		for (int i = 1; i < n - len + 1; i++) {
-			j = i + len - 1;
-			mat[i][j] = INT_MAX;
-			for (int k = i; k <= j - 1; k++) {
-				c = mat[i][k] + mat[k + 1][j] + arr[i - 1] * arr[k] * arr[j];
-				if (c < mat[i][j]) {
-					mat[i][j] = c;
-				}
-			}
-		}
-	}
-	
-	for(int i=1;i<n;i++) {
-		printf("\n");
-		for(int j=1;j<n;j++) {
-			printf("%d\t",mat[i][j]);
-		}
-	}
-	
-	return mat[1][n - 1];
+void print_parentheses(int s[][5], int i, int j) {
+    if (i == j) {
+        printf("A%d", i);
+        return;
+    }
+    printf("(");
+    print_parentheses(s, i, s[i][j]);
+    print_parentheses(s, s[i][j] + 1, j);
+    printf(")");
 }
 
+int matrixmin(int p[], int n) {
+    int m[n][n];
+    int s[n][n];
+    memset(m, 0, sizeof(m[0][0]) * n * n);
 
+    int i, j, k, L, q;
 
-int main()
-{
-	int n;
-	//int arr[] = { 1, 2, 3, 4 };
-	//int n = sizeof(arr) / sizeof(arr[0]);
-	printf("\nEnter the size of array: ");
-	scanf("%d", &n);
-	int arr[n];
-	for(int i = 0 ; i < n ; i++) {
-		printf("\nEnter the %d element of the array: ", i+1);
-		scanf("%d", &arr[i]);
-	} 
-	printf("\n\nMinimum number of multiplications: %d ",
-		MatrixChainOrder(arr, n));
-	return 0;
+    for (L = 2; L < n; L++) {
+        for (i = 1; i < n - L + 1; i++) {
+            j = i + L - 1;
+            m[i][j] = INT_MAX;
+            for (k = i; k <= j - 1; k++) {
+                q = m[i][k] + m[k + 1][j] + p[i - 1] * p[k] * p[j];
+                if (q < m[i][j]) {
+                    m[i][j] = q;
+                    s[i][j] = k;
+                }
+            }
+        }
+    }
+
+    printf("\nm Table:\n");
+    for (i = 1; i < n; i++) {
+        for (j = 1; j < n; j++) {
+            printf("%d ", m[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("\ns Table:\n");
+    for (i = 1; i < n - 1; i++) {
+        for (j = 2; j < n; j++) {
+            if (i < j) {
+                printf("%d ", s[i][j]);
+            } else {
+                printf("  ");
+            }
+        }
+        printf("\n");
+    }
+
+    printf("\nOptimal Multiplication: ");
+    print_parentheses(s, 1, n - 1);
+    printf("\n");
+
+    return m[1][n - 1];
 }
 
+int main() {
+    int arr[] = {1, 2, 3, 2, 1};
+    int size = sizeof(arr) / sizeof(arr[0]);
+
+    printf("\nMinimum cost = %d\n", matrixmin(arr, size));
+
+    return 0;
+}
